@@ -97,7 +97,7 @@ fn update_particles(
             let mut f = 0.0;
 
             if distance < min_distance {
-                f = -5.0;
+                f = -200.0;
             }
 
             if distance > min_distance && distance < force_distance {
