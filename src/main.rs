@@ -89,24 +89,25 @@ fn update_particles(
         let mut fx = 0.0;
         let mut fy = 0.0;
 
-        // Find particles within this grid, and the neighbouring grids
         for j in 0..particles2.unwrap_or(particles1).len() {
             let particle2 = &particles2.unwrap_or(particles1)[j];
             let dx = particle1.x - particle2.x;
             let dy = particle1.y - particle2.y;
             let distance = (dx * dx + dy * dy).sqrt();
+            let mut f = 0.0;
+
+            if distance < min_distance {
+                f = -5.0;
+            }
 
             if distance > min_distance && distance < force_distance {
-                let mut f = gravity * particle1.mass * particle2.mass / distance;
-                if distance <= min_distance {
-                    f = -f;
-                }
-
-                fx += (f - particle1.xv * friction) * dx;
-                fy += (f - particle1.yv * friction) * dy;
-                particle1.xv = (particle1.xv + fx) * velocity_factor;
-                particle1.yv = (particle1.yv + fy) * velocity_factor;
+                f = gravity * particle1.mass * particle2.mass / distance;
             }
+
+            fx += (f - particle1.xv * friction) * dx;
+            fy += (f - particle1.yv * friction) * dy;
+            particle1.xv = (particle1.xv + fx) * velocity_factor;
+            particle1.yv = (particle1.yv + fy) * velocity_factor;
         }
 
 
@@ -130,7 +131,7 @@ struct Value {
 
 
 fn main() -> Result<()> {
-    let amount = 600;
+    let amount = 200;
 
     // Read config file for below info
     let values = [
@@ -194,14 +195,7 @@ fn main() -> Result<()> {
         let length = all_colours.len();
         for i in 0..length {
             for j in 0..length {
-                if i == j {
-                    let mut colour_vec = &mut all_colours[i];
-                    let colour = colour_vec[0].colour;
-                    let gravity = colors_map.get(&(colour,colour)).unwrap().to_owned();
-                    update_particles(&mut colour_vec, None, screen_height as f64, screen_width as f64, min_distance, force_distance, gravity, friction, velocity_factor);
-                }
-                else 
-                {
+                if i != j {
                     let colour = all_colours[i][0].colour;
 
                     let colour_vec2 = &all_colours[j].clone();
@@ -210,6 +204,13 @@ fn main() -> Result<()> {
                     let colour2 = colour_vec2[0].colour;
                     let gravity = *colors_map.get(&(colour,colour2)).unwrap();
                     update_particles(&mut colour_vec, Some(&colour_vec2), screen_height as f64, screen_width as f64, min_distance, force_distance, gravity, friction, velocity_factor);
+                }
+                else 
+                {
+                    let mut colour_vec = &mut all_colours[i];
+                    let colour = colour_vec[0].colour;
+                    let gravity = colors_map.get(&(colour,colour)).unwrap().to_owned();
+                    update_particles(&mut colour_vec, None, screen_height as f64, screen_width as f64, min_distance, force_distance, gravity, friction, velocity_factor);
                 }
             }
         }
