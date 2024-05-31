@@ -97,7 +97,7 @@ fn update_particles(
             let mut f = 0.0;
 
             if distance < min_distance {
-                f = -200.0;
+                f = -gravity * particle1.mass * particle2.mass;
             }
 
             if distance > min_distance && distance < force_distance {
@@ -131,7 +131,7 @@ struct Value {
 
 
 fn main() -> Result<()> {
-    let amount = 200;
+    let amount = 300;
 
     // Read config file for below info
     let values = [
@@ -198,7 +198,7 @@ fn main() -> Result<()> {
                 if i != j {
                     let colour = all_colours[i][0].colour;
 
-                    let colour_vec2 = &all_colours[j].clone();
+                    let colour_vec2 = all_colours[j].clone();
                     let mut colour_vec = &mut all_colours[i];
 
                     let colour2 = colour_vec2[0].colour;
