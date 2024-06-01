@@ -59,7 +59,7 @@ struct Particle {
 
 impl Particle {
     fn new(screen_height: f64, screen_width: f64,colour: Colour) -> Particle {
-        let weights = [70, 20, 10]; // Adjust the weights as needed
+        let weights = [96, 2, 1];
         let dist = WeightedIndex::new(&weights).unwrap();
 
         let mut rng = thread_rng();
@@ -67,10 +67,10 @@ impl Particle {
         let return_particle = Particle {
             x: rng.gen_range(
                    0..(screen_width/(4 as f64) ) as i32
-                   ) as f64 + (screen_width/(2 as f64)),
+                   ) as f64 + (screen_width/(2.5 as f64)),
             y: rng.gen_range(
                    0..(screen_height/(4 as f64) ) as i32
-                ) as f64 + (screen_height/(2 as f64)),
+                ) as f64 + (screen_height/(2.5 as f64)),
             xv: 0.0,
             yv: 0.0,
             mass: number,
@@ -162,7 +162,7 @@ fn main() -> Result<()> {
     //debug
     let mut force_distance = 100.0;
     println!("{force_distance}");
-    let amount = 500;
+    let amount = 1000;
 
     // Read config file for below info
     let values = [
