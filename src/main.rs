@@ -15,7 +15,14 @@ enum Colour {
     GREEN,
     BLUE,
     WHITE,
-    YELLOW
+    ORANGE,
+    PURPLE,
+    YELLOW,
+    PLUM,
+    CORAL,
+    FUCHSIA,
+    NAVY,
+    LAVENDERBLUSH
 }
 
 
@@ -25,7 +32,14 @@ fn colour_to_color(c: &Colour) -> Color {
         Colour::GREEN => Color::GREEN,
         Colour::BLUE => Color::BLUE,
         Colour::WHITE => Color::WHITE,
-        Colour::YELLOW => Color::YELLOW
+        Colour::YELLOW => Color::YELLOW,
+        Colour::ORANGE => Color::ORANGE,
+        Colour::PURPLE => Color::PURPLE,
+        Colour::PLUM => Color::PLUM,
+        Colour::CORAL => Color::CORAL,
+        Colour::FUCHSIA => Color::FUCHSIA,
+        Colour::NAVY => Color::NAVY,
+        Colour::LAVENDERBLUSH => Color::LAVENDERBLUSH 
     }
 }
 
@@ -61,7 +75,7 @@ impl Particle {
     }
     fn draw(&self,drawer: &mut RaylibDrawHandle) {
         let color = colour_to_color(&self.colour);
-        drawer.draw_circle(self.x as i32, self.y as i32 , (self.mass * 3 as f64) as f32, color);
+        drawer.draw_circle(self.x as i32, self.y as i32 , (self.mass * 4 as f64) as f32, color);
     }
 }
 
@@ -95,6 +109,9 @@ fn update_particles(
             let dy = particle1.y - particle2.y;
             let distance = (dx * dx + dy * dy).sqrt();
             let mut f = 0.0;
+            if distance > force_distance {
+                continue;
+            }
 
             if distance < min_distance {
                 f = -gravity * particle1.mass * particle2.mass;
@@ -131,15 +148,15 @@ struct Value {
 
 
 fn main() -> Result<()> {
-    let amount = 300;
+    let amount = 500;
 
     // Read config file for below info
     let values = [
-        Value {colour: Colour::RED,  amount },
-        Value {colour: Colour::WHITE,  amount },
-        Value {colour: Colour::BLUE, amount },
-        Value {colour: Colour::GREEN,  amount },
-        Value {colour: Colour::YELLOW,  amount },
+        Value {colour: Colour::NAVY,  amount },
+        Value {colour: Colour::LAVENDERBLUSH,  amount },
+        Value {colour: Colour::FUCHSIA, amount },
+        Value {colour: Colour::PLUM,  amount },
+        Value {colour: Colour::CORAL,  amount },
     ];
 
     // For each color, make a random value for their intereactions
@@ -195,23 +212,20 @@ fn main() -> Result<()> {
         let length = all_colours.len();
         for i in 0..length {
             for j in 0..length {
+                let colour = all_colours[i][0].colour;
+                let colour2 = all_colours[j][0].colour;
+
+                let mut colour_vec2 = None;
+                let clone = all_colours[j].clone();
                 if i != j {
-                    let colour = all_colours[i][0].colour;
-
-                    let colour_vec2 = all_colours[j].clone();
-                    let mut colour_vec = &mut all_colours[i];
-
-                    let colour2 = colour_vec2[0].colour;
-                    let gravity = *colors_map.get(&(colour,colour2)).unwrap();
-                    update_particles(&mut colour_vec, Some(&colour_vec2), screen_height as f64, screen_width as f64, min_distance, force_distance, gravity, friction, velocity_factor);
+                    colour_vec2 = Some(clone.as_slice());
                 }
-                else 
-                {
-                    let mut colour_vec = &mut all_colours[i];
-                    let colour = colour_vec[0].colour;
-                    let gravity = colors_map.get(&(colour,colour)).unwrap().to_owned();
-                    update_particles(&mut colour_vec, None, screen_height as f64, screen_width as f64, min_distance, force_distance, gravity, friction, velocity_factor);
-                }
+
+                let mut colour_vec = &mut all_colours[i];
+
+                let gravity = *colors_map.get(&(colour,colour2)).unwrap();
+
+                update_particles(&mut colour_vec, colour_vec2, screen_height as f64, screen_width as f64, min_distance, force_distance, gravity, friction, velocity_factor);
             }
         }
 
