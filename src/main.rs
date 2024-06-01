@@ -66,10 +66,10 @@ impl Particle {
         let number = (dist.sample(&mut rng) + 1) as f64;
         let return_particle = Particle {
             x: rng.gen_range(
-                   0..(screen_width/(4 as f64) ) as i32
+                   0..(screen_width/(3 as f64) ) as i32
                    ) as f64 + (screen_width/(2.5 as f64)),
             y: rng.gen_range(
-                   0..(screen_height/(4 as f64) ) as i32
+                   0..(screen_height/(3 as f64) ) as i32
                 ) as f64 + (screen_height/(2.5 as f64)),
             xv: 0.0,
             yv: 0.0,
@@ -160,9 +160,9 @@ fn main() -> Result<()> {
     let friction =  0.0;
     let min_distance =  1.0;
     //debug
-    let mut force_distance = 100.0;
+    let mut force_distance = 250.0;
     println!("{force_distance}");
-    let amount = 1000;
+    let amount = 800;
 
     // Read config file for below info
     let values = [
