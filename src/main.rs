@@ -158,7 +158,7 @@ fn main() -> Result<()> {
     let screen_width = 1920;
     let velocity_factor =  0.1;
     let friction =  0.0;
-    let min_distance =  1.0;
+    let min_distance = 5.0;
     //debug
     let mut force_distance = 250.0;
     println!("{force_distance}");
@@ -188,6 +188,7 @@ fn main() -> Result<()> {
     let mut rng = rand::thread_rng();
 
     let mut colors_map:  HashMap<(Colour, Colour), f64> = HashMap::new();
+    //let mut colour_forces_vec: Vec<f64> = Vec::with_capacity(values.len().pow(2));
 
     let mut all_colours: Vec<Vec<Particle>> = Vec::new();
     for value in values.clone() {
@@ -196,6 +197,7 @@ fn main() -> Result<()> {
         for value2 in values {
             let key = (value.colour,value2.colour);
             let force = rng.gen_range(-1.0..1.0);
+            //colour_forces_vec.push(force.into());
             colors_map.insert(key,force.into());
 
         }
