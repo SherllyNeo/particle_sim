@@ -2,6 +2,7 @@ use raylib::prelude::*;
 use raylib::color::Color;
 use anyhow::Result;
 use rand::{thread_rng, Rng};
+use rand::distributions::{WeightedIndex,Distribution};
 use std::collections::HashMap;
 use std::{self, f32};
 use derivative::Derivative; // 2.2.0
@@ -45,7 +46,7 @@ fn colour_to_color(c: &Colour) -> Color {
 
 
 
-#[derive(Debug, Derivative,Clone, PartialEq)]
+#[derive(Debug, Derivative,Clone, PartialEq, Copy)]
 struct Particle {
     x: f64,
     y: f64,
@@ -58,7 +59,11 @@ struct Particle {
 
 impl Particle {
     fn new(screen_height: f64, screen_width: f64,colour: Colour) -> Particle {
+        let weights = [70, 20, 10]; // Adjust the weights as needed
+        let dist = WeightedIndex::new(&weights).unwrap();
+
         let mut rng = thread_rng();
+        let number = (dist.sample(&mut rng) + 1) as f64;
         let return_particle = Particle {
             x: rng.gen_range(
                    0..(screen_width/(4 as f64) ) as i32
@@ -68,14 +73,14 @@ impl Particle {
                 ) as f64 + (screen_height/(2 as f64)),
             xv: 0.0,
             yv: 0.0,
-            mass: 1.0,
+            mass: number,
             colour
         };
         return_particle
     }
     fn draw(&self,drawer: &mut RaylibDrawHandle) {
         let color = colour_to_color(&self.colour);
-        drawer.draw_circle(self.x as i32, self.y as i32 , (self.mass * 4 as f64) as f32, color);
+        drawer.draw_circle(self.x as i32, self.y as i32 , (self.mass * 1 as f64) as f32, color);
     }
 }
 
@@ -99,7 +104,7 @@ fn update_particles(
 ) {
 
     for i in 0..particles1.len() {
-        let mut particle1 = particles1[i].clone();
+        let mut particle1 = particles1[i];
         let mut fx = 0.0;
         let mut fy = 0.0;
 
@@ -108,18 +113,18 @@ fn update_particles(
             let dx = particle1.x - particle2.x;
             let dy = particle1.y - particle2.y;
             let distance = (dx * dx + dy * dy).sqrt();
-            let mut f = 0.0;
-            if distance > force_distance {
+            let f;
+            if distance >= force_distance {
                 continue;
             }
 
-            if distance < min_distance {
+            else if distance <= min_distance {
                 f = -gravity * particle1.mass * particle2.mass;
             }
-
-            if distance > min_distance && distance < force_distance {
+            else {
                 f = gravity * particle1.mass * particle2.mass / distance;
             }
+
 
             fx += (f - particle1.xv * friction) * dx;
             fy += (f - particle1.yv * friction) * dy;
@@ -148,6 +153,15 @@ struct Value {
 
 
 fn main() -> Result<()> {
+    let font_size =  30;
+    let screen_height = 1080;
+    let screen_width = 1920;
+    let velocity_factor =  0.1;
+    let friction =  0.0;
+    let min_distance =  1.0;
+    //debug
+    let mut force_distance = 100.0;
+    println!("{force_distance}");
     let amount = 500;
 
     // Read config file for below info
@@ -165,19 +179,12 @@ fn main() -> Result<()> {
     // Draw each
 
     
-    let screen_height = 1080;
-    let screen_width = 1920;
-    let radius =  5.0;
-    let velocity_factor =  0.1;
-    let friction =  0.0;
-    let min_distance =  1.0;
-    let force_distance =  radius*(screen_width as f64)*(screen_height as f64)*0.00004;
 
     let (mut rl,thread) = raylib::init()
         .size(screen_width, screen_height)
         .title("Particle life")
         .build();
-    rl.set_target_fps(60);
+    rl.set_target_fps(40);
     let mut rng = rand::thread_rng();
 
     let mut colors_map:  HashMap<(Colour, Colour), f64> = HashMap::new();
@@ -200,15 +207,17 @@ fn main() -> Result<()> {
 
 
     while !rl.window_should_close() {
+        //get user input
+        if rl.is_key_down(KeyboardKey::KEY_KP_SUBTRACT) {
+            force_distance -= 1.0;
+        }
+        if rl.is_key_down(KeyboardKey::KEY_KP_ADD) {
+            force_distance += 1.0;
+        }
+        let fps = rl.get_fps();
+    
+
         // update
-       // let colour_force = gravity as f64*0.8;
-       // update_particles(&mut red_particles, Some(&blue_particles), screen_height as f64, screen_width as f64, mindistance as f64, forcedistance as f64, colour_force, friction, velocityfactor);
-       // let colour_force = gravity as f64*-0.5;
-       // update_particles(&mut blue_particles, Some(&ed_particles), screen_height as f64, screen_width as f64, mindistance as f64, forcedistance as f64, colour_force, friction, velocityfactor);
-       // let colour_force = gravity as f64*-0.1;
-       // update_particles(&mut blue_particles, None, screen_height as f64, screen_width as f64, mindistance as f64, forcedistance as f64, colour_force, friction, velocityfactor);
-
-
         let length = all_colours.len();
         for i in 0..length {
             for j in 0..length {
@@ -234,6 +243,7 @@ fn main() -> Result<()> {
         // draw
         let mut drawer = rl.begin_drawing(&thread);
         drawer.clear_background(Color::BLACK);
+        drawer.draw_text(&format!("Force Distance: {force_distance}\n\nPress +/- to change\n\n\nFPS: {fps}"), 0, 0, font_size, Color::WHITE);
 
         for colour_vec in &all_colours {
             draw_all_particles(&colour_vec,&mut drawer);
