@@ -59,7 +59,7 @@ struct Particle {
 
 impl Particle {
     fn new(screen_height: f64, screen_width: f64,colour: Colour) -> Particle {
-        let weights = [96, 2, 1];
+        let weights = [97, 2, 1];
         let dist = WeightedIndex::new(&weights).unwrap();
 
         let mut rng = thread_rng();
@@ -114,15 +114,17 @@ fn update_particles(
             let dy = particle1.y - particle2.y;
             let distance = (dx * dx + dy * dy).sqrt();
             let f;
+            let mass_effect = particle1.mass * particle2.mass;
             if distance >= force_distance {
                 continue;
             }
 
+
             else if distance <= min_distance {
-                f = -gravity * particle1.mass * particle2.mass;
+                f = -gravity;
             }
             else {
-                f = gravity * particle1.mass * particle2.mass / distance;
+                f = gravity * mass_effect / distance;
             }
 
 
